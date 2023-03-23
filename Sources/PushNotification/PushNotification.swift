@@ -5,15 +5,22 @@ import NetworkInterface
 import Network
 import OSLog
 
+public typealias Closure = () -> Void
+public typealias RegisterTokenHandler = (_ fcmToken: String, _ dataTransferService: AFDataTransferServiceProtocol) async throws -> Void
+
 public class PushNotification: NSObject {
     
     public var onNotificationReceived: Closure?
-    let dataTransferService: AFDataTransferServiceProtocol
+    
+    private let registerTokenHandler: RegisterTokenHandler
+    private let dataTransferService: AFDataTransferServiceProtocol
     
     private let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
     
-    public init(dataTransferService: AFDataTransferServiceProtocol) {
+    public init(dataTransferService: AFDataTransferServiceProtocol,
+                registerTokenHandler: @escaping RegisterTokenHandler) {
         self.dataTransferService = dataTransferService
+        self.registerTokenHandler = registerTokenHandler
     }
     
     public func getPermission(completionHandler: @escaping (Error?) -> Void  ) {
@@ -41,16 +48,9 @@ public class PushNotification: NSObject {
     
     public func registerFCMToken() {
         if let fcmToken = Messaging.messaging().fcmToken {
-            let query: [String: String] = ["push_token": fcmToken, "appOS": "1"]
-            let endpoint = Endpoint<Dictionary<String, String>>(
-                path: "savePushToken.php",
-                method: .post,
-                queryParameters: query
-            )
             Task {
                 do {
-                    let response = try await dataTransferService.request(endpoint)
-                    os_log("%s", response.description)
+                    try await registerTokenHandler(fcmToken, dataTransferService)
                 } catch {
                     os_log("%s", error.localizedDescription)
                 }
@@ -84,5 +84,3 @@ extension PushNotification: MessagingDelegate {
         registerFCMToken()
     }
 }
-
-public typealias Closure = () -> Void
