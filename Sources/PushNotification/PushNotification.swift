@@ -8,7 +8,7 @@ import OSLog
 public typealias Closure = () -> Void
 public typealias RegisterTokenHandler = (_ fcmToken: String, _ dataTransferService: AFDataTransferServiceProtocol) async throws -> Void
 
-public class PushNotification: NSObject {
+open class PushNotification: NSObject {
     
     public var onNotificationReceived: Closure?
     
@@ -23,7 +23,7 @@ public class PushNotification: NSObject {
         self.registerTokenHandler = registerTokenHandler
     }
     
-    public func getPermission(completionHandler: @escaping (Error?) -> Void  ) {
+    open func getPermission(completionHandler: @escaping (Error?) -> Void  ) {
         UNUserNotificationCenter.current().requestAuthorization(options: authOptions) { _, error in
             DispatchQueue.main.async {
                 self.setup()
@@ -32,21 +32,21 @@ public class PushNotification: NSObject {
         }
     }
     
-    public func getToken() -> String? {
+    open func getToken() -> String? {
         return Messaging.messaging().fcmToken
     }
     
-    public func updateDeviceToken(_ deviceToken: Data) {
+    open func updateDeviceToken(_ deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
     }
     
-    public  func setup() {
+    open  func setup() {
         UIApplication.shared.registerForRemoteNotifications()
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
     }
     
-    public func registerFCMToken() {
+    open func registerFCMToken() {
         if let fcmToken = Messaging.messaging().fcmToken {
             Task {
                 do {
@@ -58,7 +58,7 @@ public class PushNotification: NSObject {
         }
     }
     
-    func unregister() {
+    open func unregister() {
         UIApplication.shared.unregisterForRemoteNotifications()
     }
 }
