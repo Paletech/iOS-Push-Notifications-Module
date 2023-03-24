@@ -45,7 +45,7 @@ open class PushNotification: NSObject {
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
     }
-    
+
     open func registerFCMToken() {
         if let fcmToken = Messaging.messaging().fcmToken {
             Task {
