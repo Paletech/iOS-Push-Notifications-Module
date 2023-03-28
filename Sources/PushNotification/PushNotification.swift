@@ -86,21 +86,3 @@ extension PushNotification: MessagingDelegate {
         registerFCMToken()
     }
 }
-/*
- let registerTokenHandler: RegisterTokenHandler = { fcmToken in
-     let query = [
-         "esp": "0",
-         "push_token": fcmToken,
-         "appOS": "1"
-     ]
-     
-     let endpoint = Endpoint<Dictionary<String, String>>(
-         path: "savePushToken.php",
-         method: .post,
-         queryParameters: query
-     )
-     _ = try await resolver.resolve(AFDataTransferServiceProtocol.self)!.request(endpoint)
- }
-
- return PushNotification(registerTokenHandler: registerTokenHandler)
- */
