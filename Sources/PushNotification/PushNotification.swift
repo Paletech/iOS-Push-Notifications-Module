@@ -12,22 +12,11 @@ open class PushNotification: NSObject {
     public var onNotificationReceived: Closure?
     public var willPresentNotification: WillPresentNotification?
     
-<<<<<<< HEAD
     private let registerTokenHandler: RegisterTokenHandler
     
     private let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
     
     public init(registerTokenHandler: @escaping RegisterTokenHandler) {
-=======
-    private let registerTokenHandler: RegisterTokenHandler?
-    private let dataTransferService: AFDataTransferServiceProtocol?
-    
-    private let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-    
-    public init(dataTransferService: AFDataTransferServiceProtocol? = nil,
-                registerTokenHandler: RegisterTokenHandler? = nil) {
-        self.dataTransferService = dataTransferService
->>>>>>> develop
         self.registerTokenHandler = registerTokenHandler
     }
     
@@ -55,14 +44,10 @@ open class PushNotification: NSObject {
     }
 
     open func registerFCMToken() {
-        if let fcmToken = Messaging.messaging().fcmToken, let handler = registerTokenHandler, let service = dataTransferService {
+        if let fcmToken = Messaging.messaging().fcmToken {
             Task {
                 do {
-<<<<<<< HEAD
                     try await registerTokenHandler(fcmToken)
-=======
-                    try await handler(fcmToken, service)
->>>>>>> develop
                 } catch {
                     os_log("%s", error.localizedDescription)
                 }
