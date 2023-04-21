@@ -14,16 +14,13 @@ let package = Package(
             targets: ["PushNotification"]),
     ],
     dependencies: [
-        .package(url: "git@github.com:Paletech/iOS-Network-Layer.git", from: "1.0.0"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk.git", .upToNextMajor(from: "10.6.0")),
     ],
     targets: [
         .target(
             name: "PushNotification",
             dependencies: [
-                .product(name: "Network", package: "iOS-Network-Layer"),
                 .product(name: "FirebaseMessaging", package: "firebase-ios-sdk"),
-                .product(name: "NetworkInterface", package: "iOS-Network-Layer"),
             ]),
     ]
 )

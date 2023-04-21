@@ -1,25 +1,22 @@
 import UIKit
 import UserNotifications
 import FirebaseMessaging
-import NetworkInterface
-import Network
 import OSLog
 
 public typealias Closure = () -> Void
-public typealias RegisterTokenHandler = (_ fcmToken: String, _ dataTransferService: AFDataTransferServiceProtocol) async throws -> Void
+public typealias RegisterTokenHandler = (_ fcmToken: String) async throws -> Void
+public typealias WillPresentNotification = (UNNotification) -> UNNotificationPresentationOptions
 
 open class PushNotification: NSObject {
     
     public var onNotificationReceived: Closure?
+    public var willPresentNotification: WillPresentNotification?
     
-    private let registerTokenHandler: RegisterTokenHandler?
-    private let dataTransferService: AFDataTransferServiceProtocol?
+    private let registerTokenHandler: RegisterTokenHandler
     
     private let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
     
-    public init(dataTransferService: AFDataTransferServiceProtocol? = nil,
-                registerTokenHandler: RegisterTokenHandler? = nil) {
-        self.dataTransferService = dataTransferService
+    public init(registerTokenHandler: @escaping RegisterTokenHandler) {
         self.registerTokenHandler = registerTokenHandler
     }
     
@@ -35,22 +32,22 @@ open class PushNotification: NSObject {
     open func getToken() -> String? {
         return Messaging.messaging().fcmToken
     }
-    
+
     open func updateDeviceToken(_ deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
     }
-    
-    open  func setup() {
+
+    open func setup() {
         UIApplication.shared.registerForRemoteNotifications()
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
     }
 
     open func registerFCMToken() {
-        if let fcmToken = Messaging.messaging().fcmToken, let handler = registerTokenHandler, let service = dataTransferService {
+        if let fcmToken = Messaging.messaging().fcmToken {
             Task {
                 do {
-                    try await handler(fcmToken, service)
+                    try await registerTokenHandler(fcmToken)
                 } catch {
                     os_log("%s", error.localizedDescription)
                 }
@@ -68,7 +65,12 @@ extension PushNotification: UNUserNotificationCenterDelegate {
     public func userNotificationCenter(_ center: UNUserNotificationCenter,
                                        willPresent notification: UNNotification,
                                        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.alert, .badge, .sound])
+        if let willPresentNotification = willPresentNotification {
+            let options = willPresentNotification(notification)
+            completionHandler(options)
+        } else {
+            completionHandler([.alert, .badge, .sound])
+        }
     }
     
     public func userNotificationCenter(_ center: UNUserNotificationCenter,
